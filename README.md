@@ -4,7 +4,7 @@
 ### Basic use
 
 ```dart
-FlutterPhoneField(
+FlutterPhoneNumberField(
   name: 'phone_number',
   decoration: const InputDecoration(
     labelText: 'Phone Number',

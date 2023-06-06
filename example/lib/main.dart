@@ -2,7 +2,7 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_phone_number_field/flutter_phone_field.dart';
+import 'package:flutter_phone_number_field/flutter_phone_number_field.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 void main() {
@@ -53,7 +53,7 @@ class MyHomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              FormBuilderPhoneField(
+              FlutterPhoneNumberField(
                 name: 'phone_number',
                 decoration: const InputDecoration(
                   labelText: 'Phone Number',

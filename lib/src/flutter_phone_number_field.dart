@@ -9,7 +9,7 @@ import 'package:phone_number/phone_number.dart';
 
 //TODO: Switch country_pickers for country_code_picker
 /// Field for international phone number input.
-class FormBuilderPhoneField extends FormBuilderField<String> {
+class FlutterPhoneNumberField extends FormBuilderField<String> {
   //TODO: Add documentation
   final TextInputType keyboardType;
   final bool obscureText;
@@ -119,7 +119,7 @@ class FormBuilderPhoneField extends FormBuilderField<String> {
   final InputDecoration decoration;
 
   /// Creates field for international phone number input.
-  FormBuilderPhoneField({
+  FlutterPhoneNumberField({
     Key? key,
     //From Super
     required String name,
@@ -200,7 +200,7 @@ class FormBuilderPhoneField extends FormBuilderField<String> {
           onReset: onReset,
           focusNode: focusNode,
           builder: (FormFieldState<String?> field) {
-            final state = field as _FormBuilderPhoneFieldState;
+            final state = field as _FlutterPhoneNumberFieldState;
 
             return InputDecorator(
               decoration: state.decoration,
@@ -286,12 +286,12 @@ class FormBuilderPhoneField extends FormBuilderField<String> {
         );
 
   @override
-  FormBuilderFieldState<FormBuilderPhoneField, String> createState() =>
-      _FormBuilderPhoneFieldState();
+  FormBuilderFieldState<FlutterPhoneNumberField, String> createState() =>
+      _FlutterPhoneNumberFieldState();
 }
 
-class _FormBuilderPhoneFieldState
-    extends FormBuilderFieldState<FormBuilderPhoneField, String> {
+class _FlutterPhoneNumberFieldState
+    extends FormBuilderFieldState<FlutterPhoneNumberField, String> {
   late TextEditingController _effectiveController;
   late Country _selectedDialogCountry;
   late InputDecoration decoration;
