@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_phone_number_field/src/flutter_phone_field.dart';
+import 'package:flutter_phone_number_field/flutter_phone_field.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 
@@ -10,7 +10,7 @@ void main() {
       final formFieldKey = GlobalKey<FormBuilderFieldState>();
       const fieldName = 'phone';
       final testWidget =
-          FlutterPhoneField(name: fieldName, key: formFieldKey);
+          FormBuilderPhoneField(name: fieldName, key: formFieldKey);
       const validPhone = '642337488';
       const validCodePhone = '+34';
       await tester.pumpWidget(buildTestableFieldWidget(testWidget));
@@ -26,7 +26,7 @@ void main() {
       final formFieldKey = GlobalKey<FormBuilderFieldState>();
       const fieldName = 'phone';
       const initialValue = '12345';
-      final testWidget = FlutterPhoneField(
+      final testWidget = FormBuilderPhoneField(
         name: fieldName,
         key: formFieldKey,
         initialValue: initialValue,
@@ -47,7 +47,7 @@ void main() {
       const validPhone = '691375833';
       const validCodePhone = '+34';
       final testWidget =
-          FlutterPhoneField(name: fieldName, key: formFieldKey);
+          FormBuilderPhoneField(name: fieldName, key: formFieldKey);
       await tester.pumpWidget(buildTestableFieldWidget(testWidget));
 
       formFieldKey.currentState?.didChange('$validCodePhone$validPhone');
@@ -60,7 +60,7 @@ void main() {
     testWidgets('should reset value when call reset', (tester) async {
       final formKey = GlobalKey<FormBuilderState>();
       const fieldName = 'phone';
-      final testWidget = FlutterPhoneField(name: fieldName);
+      final testWidget = FormBuilderPhoneField(name: fieldName);
       await tester
           .pumpWidget(buildTestableFieldWidget(testWidget, formKey: formKey));
 
@@ -75,7 +75,7 @@ void main() {
       final formKey = GlobalKey<FormBuilderState>();
       const fieldName = 'phone';
       const initialValue = '1235';
-      final testWidget = FlutterPhoneField(name: fieldName);
+      final testWidget = FormBuilderPhoneField(name: fieldName);
       await tester.pumpWidget(buildTestableFieldWidget(
         testWidget,
         formKey: formKey,
@@ -94,7 +94,7 @@ void main() {
       const fieldName = 'phone';
       const validPhone = '602299271';
       const validCodePhone = '+34';
-      final testWidget = FlutterPhoneField(name: fieldName);
+      final testWidget = FormBuilderPhoneField(name: fieldName);
       await tester
           .pumpWidget(buildTestableFieldWidget(testWidget, formKey: formKey));
 

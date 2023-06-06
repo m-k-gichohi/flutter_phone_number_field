@@ -53,13 +53,15 @@ class MyHomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              FlutterPhoneField(
+              FormBuilderPhoneField(
                 name: 'phone_number',
                 decoration: const InputDecoration(
                   labelText: 'Phone Number',
-                  hintText: 'Hint',
+                  hintText: 'Hintsss',
                 ),
-                // onChanged: _onChanged,
+                onChanged: (value) {
+                  debugPrint('rrrrrrrrrrrrrrrrrrrrr , $value');
+                },
                 priorityListByIsoCode: const ['KE', 'US'],
                 defaultSelectedCountryIsoCode: 'KE',
                 validator: FormBuilderValidators.compose([
@@ -75,6 +77,7 @@ class MyHomePage extends StatelessWidget {
                     onPressed: () {
                       if (_formKey.currentState!.saveAndValidate()) {
                         debugPrint(_formKey.currentState!.value.toString());
+                        debugPrint(_formKey.currentState!.isValid.toString());
                       }
                     },
                     child: const Text("Submit"),
