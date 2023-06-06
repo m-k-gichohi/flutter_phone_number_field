@@ -9,7 +9,7 @@ import 'package:phone_number/phone_number.dart';
 
 //TODO: Switch country_pickers for country_code_picker
 /// Field for international phone number input.
-class FlutterPhoneNumberField extends FormBuilderField<String> {
+class FlutterPhoneNumberField extends FormBuilderFieldDecoration<String> {
   //TODO: Add documentation
   final TextInputType keyboardType;
   final bool obscureText;
@@ -116,23 +116,30 @@ class FlutterPhoneNumberField extends FormBuilderField<String> {
   ///
   /// By default this widget is `const Icon(Icons.arrow_drop_down)`
   final Widget? iconSelector;
-  final InputDecoration decoration;
+
+  /// View to display when search found no result
+  final Widget? searchEmptyView;
+
+  /// Country picker button
+  final Widget Function(
+    Widget flag,
+    String countryCode,
+  )? countryPicker;
 
   /// Creates field for international phone number input.
   FlutterPhoneNumberField({
-    Key? key,
-    //From Super
-    required String name,
-    FormFieldValidator<String>? validator,
-    String? initialValue,
-    // InputDecoration decoration = const InputDecoration(),
-    ValueChanged<String?>? onChanged,
-    ValueTransformer<String?>? valueTransformer,
-    bool enabled = true,
-    FormFieldSetter<String>? onSaved,
-    AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
-    VoidCallback? onReset,
-    FocusNode? focusNode,
+       super.key,
+    required super.name,
+    super.validator,
+    super.initialValue,
+    super.decoration,
+    super.onChanged,
+    super.valueTransformer,
+    super.enabled,
+    super.onSaved,
+    super.autovalidateMode,
+    super.onReset,
+    super.focusNode,
     this.obscureText = false,
     this.textCapitalization = TextCapitalization.none,
     this.scrollPadding = const EdgeInsets.all(20.0),
@@ -185,54 +192,50 @@ class FlutterPhoneNumberField extends FormBuilderField<String> {
     this.priorityList,
     this.itemBuilder,
     this.iconSelector,
-    this.decoration = const InputDecoration(),
+    this.countryPicker,
+    this.searchEmptyView,
   })  : assert(initialValue == null || controller == null),
         super(
-          key: key,
-          initialValue: initialValue,
-          name: name,
-          validator: validator,
-          valueTransformer: valueTransformer,
-          onChanged: onChanged,
-          autovalidateMode: autovalidateMode,
-          onSaved: onSaved,
-          enabled: enabled,
-          onReset: onReset,
-          focusNode: focusNode,
           builder: (FormFieldState<String?> field) {
             final state = field as _FlutterPhoneNumberFieldState;
 
             return InputDecorator(
               decoration: state.decoration,
-             
               child: Row(
                 children: <Widget>[
                   GestureDetector(
                     onTap: state.enabled
                         ? () {
-                            // state.requestFocus();
+                            state.focus();
                             isCupertinoPicker
                                 ? state._openCupertinoCountryPicker()
                                 : state._openCountryPickerDialog();
                           }
                         : null,
-                    child: Row(
-                      children: <Widget>[
-                        iconSelector ?? const Icon(Icons.arrow_drop_down),
-                        const SizedBox(width: 10),
-                        CountryPickerUtils.getDefaultFlagImage(
-                          state._selectedDialogCountry,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          '+${state._selectedDialogCountry.phoneCode} ',
-                          style: Theme.of(state.context)
-                              .textTheme
-                              .titleMedium!
-                              .merge(style),
-                        ),
-                      ],
-                    ),
+                    child: countryPicker != null
+                        ? countryPicker(
+                            CountryPickerUtils.getDefaultFlagImage(
+                              state._selectedDialogCountry,
+                            ),
+                            '+${state._selectedDialogCountry.phoneCode} ',
+                          )
+                        : Row(
+                            children: <Widget>[
+                              iconSelector ?? const Icon(Icons.arrow_drop_down),
+                              const SizedBox(width: 10),
+                              CountryPickerUtils.getDefaultFlagImage(
+                                state._selectedDialogCountry,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                '+${state._selectedDialogCountry.phoneCode} ',
+                                style: Theme.of(state.context)
+                                    .textTheme
+                                    .titleMedium!
+                                    .merge(style),
+                              ),
+                            ],
+                          ),
                   ),
                   Expanded(
                     child: TextField(
@@ -286,15 +289,14 @@ class FlutterPhoneNumberField extends FormBuilderField<String> {
         );
 
   @override
-  FormBuilderFieldState<FlutterPhoneNumberField, String> createState() =>
+  FormBuilderFieldDecorationState<FlutterPhoneNumberField, String> createState() =>
       _FlutterPhoneNumberFieldState();
 }
 
 class _FlutterPhoneNumberFieldState
-    extends FormBuilderFieldState<FlutterPhoneNumberField, String> {
+    extends FormBuilderFieldDecorationState<FlutterPhoneNumberField, String> {
   late TextEditingController _effectiveController;
   late Country _selectedDialogCountry;
-  late InputDecoration decoration;
 
   String get fullNumber {
     // When there is no phone number text, the field is empty -- the country
@@ -311,7 +313,6 @@ class _FlutterPhoneNumberFieldState
     _effectiveController = widget.controller ?? TextEditingController();
     _selectedDialogCountry = CountryPickerUtils.getCountryByIsoCode(
         widget.defaultSelectedCountryIsoCode);
-    decoration = widget.decoration;
     _parsePhone();
   }
 
@@ -348,7 +349,11 @@ class _FlutterPhoneNumberFieldState
       }
     }
   }
-
+ @override
+  void didChange(String? value) async {
+    super.didChange(value);
+    widget.onChanged?.call(fullNumber);
+  }
   void invokeChange() {
     didChange(fullNumber);
     widget.onChanged?.call(fullNumber);
