@@ -1,16 +1,10 @@
-import 'package:country_pickers/country.dart';
-import 'package:country_pickers/country_pickers.dart';
-import 'package:country_pickers/utils/typedefs.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:phone_number/phone_number.dart';
 
-//TODO: Switch country_pickers for country_code_picker
-/// Field for international phone number input.
-class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
-  //TODO: Add documentation
+class FlutterPhoneField extends FormBuilderFieldDecoration<String> {
   final TextInputType keyboardType;
   final bool obscureText;
   final TextStyle? style;
@@ -61,10 +55,10 @@ class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
   ///
   /// All children will be given the [BoxConstraints] to match this exact
   /// height. Must not be null and must be positive.
-  final double pickerItemHeight;
+  // final double pickerItemHeight;
 
-  ///The height of the picker
-  final double pickerSheetHeight;
+  // ///The height of the picker
+  // final double pickerSheetHeight;
 
   ///The TextStyle that is applied to Text widgets inside item
   final TextStyle? textStyle;
@@ -95,7 +89,7 @@ class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
   /// {@macro flutter.rendering.wheelList.magnification}
   final double magnification;
 
-  final Country? initialCountry;
+  // final Country? initialCountry;
 
   /// A [FixedExtentScrollController] to read and control the current item.
   ///
@@ -103,14 +97,13 @@ class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
   final FixedExtentScrollController? scrollController;
 
   /// [Comparator] to be used in sort of country list
-  final Comparator<Country>? sortComparator;
+  // final Comparator<Country>? sortComparator;
 
   /// List of countries that are placed on top
-  final List<Country>? priorityList;
+  // final List<Country>? priorityList;
 
   ///Callback that is called with selected item of type Country which returns a
   ///Widget to build list view item inside dialog
-  final ItemBuilder? itemBuilder;
 
   /// Set a custom widget in left side of flag, (country selector)
   ///
@@ -127,7 +120,7 @@ class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
   )? countryPicker;
 
   /// Creates field for international phone number input.
-  FormBuilderPhoneField({
+  FlutterPhoneField({
     super.key,
     required super.name,
     super.validator,
@@ -178,65 +171,27 @@ class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
     this.isCupertinoPicker = false,
     this.cupertinoPickerSheetHeight,
     this.textAlignVertical,
-    this.pickerItemHeight = defaultPickerItemHeight,
-    this.pickerSheetHeight = defaultPickerSheetHeight,
     this.textStyle,
     this.diameterRatio = 1.35,
     this.backgroundColor = const Color(0xFFD2D4DB),
     this.offAxisFraction = 0.0,
     this.useMagnifier = false,
     this.magnification = 1.0,
-    this.initialCountry,
     this.scrollController,
-    this.sortComparator,
-    this.priorityList,
-    this.itemBuilder,
     this.iconSelector,
     this.countryPicker,
     this.searchEmptyView,
   })  : assert(initialValue == null || controller == null),
         super(
           builder: (FormFieldState<String?> field) {
-            final state = field as _FormBuilderPhoneFieldState;
+            final state = field as _FlutterPhoneFieldState;
 
             return InputDecorator(
               decoration: state.decoration,
               child: Row(
                 children: <Widget>[
-                  GestureDetector(
-                    onTap: state.enabled
-                        ? () {
-                            state.focus();
-                            isCupertinoPicker
-                                ? state._openCupertinoCountryPicker()
-                                : state._openCountryPickerDialog();
-                          }
-                        : null,
-                    child: countryPicker != null
-                        ? countryPicker(
-                            CountryPickerUtils.getDefaultFlagImage(
-                              state._selectedDialogCountry,
-                            ),
-                            '+${state._selectedDialogCountry.phoneCode} ',
-                          )
-                        : Row(
-                            children: <Widget>[
-                              iconSelector ?? const Icon(Icons.arrow_drop_down),
-                              const SizedBox(width: 10),
-                              CountryPickerUtils.getDefaultFlagImage(
-                                state._selectedDialogCountry,
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                '+${state._selectedDialogCountry.phoneCode} ',
-                                style: Theme.of(state.context)
-                                    .textTheme
-                                    .titleMedium!
-                                    .merge(style),
-                              ),
-                            ],
-                          ),
-                  ),
+                  const Icon(Icons.arrow_drop_down),
+                  state._openCountryPickerDialog(),
                   Expanded(
                     child: TextField(
                       enabled: state.enabled,
@@ -250,8 +205,10 @@ class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
                         hintStyle: decoration.hintStyle,
                       ),
                       onChanged: (value) {
-                        // Use setValue instead didChange to avoid parseNumber
-                        state.setValue(value);
+                        final phoneText =
+                            '${state._selectedDialogCountry}$value';
+
+                        state.setValue(phoneText);
                       },
                       maxLines: 1,
                       keyboardType: keyboardType,
@@ -290,31 +247,34 @@ class FormBuilderPhoneField extends FormBuilderFieldDecoration<String> {
         );
 
   @override
-  FormBuilderFieldDecorationState<FormBuilderPhoneField, String>
-      createState() => _FormBuilderPhoneFieldState();
+  FormBuilderFieldDecorationState<FlutterPhoneField, String>
+      createState() => _FlutterPhoneFieldState();
 }
 
-class _FormBuilderPhoneFieldState
-    extends FormBuilderFieldDecorationState<FormBuilderPhoneField, String> {
+class _FlutterPhoneFieldState
+    extends FormBuilderFieldDecorationState<FlutterPhoneField, String> {
   late TextEditingController _effectiveController;
-  late Country _selectedDialogCountry;
+  late String _selectedDialogCountry;
+  late String _defaultSelectedCountryIsoCode;
+  late List<String> _priorityListByIsoCode;
 
   String get fullNumber {
     // When there is no phone number text, the field is empty -- the country
     // prefix is only prepended when a phone number is specified.
     final phoneText = _effectiveController.text;
-    return phoneText.isNotEmpty
-        ? '+${_selectedDialogCountry.phoneCode}$phoneText'
-        : phoneText;
+    final phoneNumber =
+        phoneText.isNotEmpty ? '$_selectedDialogCountry$phoneText' : phoneText;
+
+    return phoneNumber;
   }
 
   @override
   void initState() {
     super.initState();
     _effectiveController = widget.controller ?? TextEditingController();
-    _selectedDialogCountry = CountryPickerUtils.getCountryByIsoCode(
-        widget.defaultSelectedCountryIsoCode);
-    _parsePhone();
+
+    _defaultSelectedCountryIsoCode = widget.defaultSelectedCountryIsoCode;
+    _priorityListByIsoCode = widget.priorityListByIsoCode!;
   }
 
   @override
@@ -329,130 +289,22 @@ class _FormBuilderPhoneFieldState
   void reset() {
     super.reset();
     _effectiveController = widget.controller ?? TextEditingController();
-    _selectedDialogCountry = CountryPickerUtils.getCountryByIsoCode(
-        widget.defaultSelectedCountryIsoCode);
-    _parsePhone();
   }
 
-  Future<void> _parsePhone({String? newPhone}) async {
-    final phone = newPhone ?? initialValue ?? '';
-    if (phone.isNotEmpty) {
-      try {
-        final parseResult = await PhoneNumberUtil().parse(phone);
-        setState(() {
-          _selectedDialogCountry =
-              CountryPickerUtils.getCountryByIsoCode(parseResult.regionCode);
-        });
-        _effectiveController.text = parseResult.nationalNumber;
-      } catch (error) {
-        if (phone.contains('+')) {
-          _effectiveController.text = phone.replaceFirst('+', '');
-        }
-        debugPrint(error.toString());
-      }
-    }
-  }
-
-  @override
-  void didChange(String? value) async {
-    super.didChange(value);
-    await _parsePhone(newPhone: value);
-  }
-
-  void _openCupertinoCountryPicker() {
-    showCupertinoModalPopup<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return CountryPickerCupertino(
-          pickerSheetHeight: widget.cupertinoPickerSheetHeight ?? 300.0,
-          onValuePicked: (Country country) {
-            effectiveFocusNode.requestFocus();
-            setState(() => _selectedDialogCountry = country);
-            didChange(fullNumber);
-          },
-          itemFilter: widget.countryFilterByIsoCode != null
-              ? (c) => widget.countryFilterByIsoCode!.contains(c.isoCode)
-              : null,
-          priorityList: widget.priorityListByIsoCode != null
-              ? List.generate(
-                  widget.priorityListByIsoCode!.length,
-                  (index) {
-                    return CountryPickerUtils.getCountryByIsoCode(
-                      widget.priorityListByIsoCode![index],
-                    );
-                  },
-                )
-              : null,
-          offAxisFraction: widget.offAxisFraction,
-          backgroundColor: widget.backgroundColor,
-          diameterRatio: widget.diameterRatio,
-          initialCountry: widget.initialCountry,
-          magnification: widget.magnification,
-          sortComparator: widget.sortComparator,
-          useMagnifier: widget.useMagnifier,
-          itemBuilder: widget.itemBuilder,
-          pickerItemHeight: widget.pickerItemHeight,
-          scrollController: widget.scrollController,
-          textStyle: widget.textStyle,
-        );
-      },
-    );
-  }
-
-  void _openCountryPickerDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            textSelectionTheme: TextSelectionThemeData(
-              cursorColor: widget.cursorColor,
-            ),
-            primaryColor: widget.cursorColor ?? Theme.of(context).primaryColor,
-          ),
-          child: CountryPickerDialog(
-            titlePadding: widget.titlePadding ?? const EdgeInsets.all(8.0),
-            searchCursorColor:
-                widget.cursorColor ?? Theme.of(context).primaryColor,
-            searchInputDecoration:
-                InputDecoration(hintText: widget.searchText ?? 'Search...'),
-            isSearchable: widget.isSearchable ?? true,
-            searchEmptyView: widget.searchEmptyView,
-            title: widget.dialogTitle ??
-                Text(
-                  'Select Your Phone Code',
-                  style: widget.dialogTextStyle ?? widget.style,
-                ),
-            onValuePicked: (Country country) {
-              setState(() => _selectedDialogCountry = country);
-              didChange(fullNumber);
-            },
-            itemFilter: widget.countryFilterByIsoCode != null
-                ? (c) => widget.countryFilterByIsoCode!.contains(c.isoCode)
-                : null,
-            priorityList: widget.priorityListByIsoCode != null
-                ? List.generate(
-                    widget.priorityListByIsoCode!.length,
-                    (index) {
-                      return CountryPickerUtils.getCountryByIsoCode(
-                          widget.priorityListByIsoCode![index]);
-                    },
-                  )
-                : null,
-            itemBuilder: _buildDialogItem,
-            sortComparator: widget.sortComparator,
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDialogItem(Country country) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: CountryPickerUtils.getDefaultFlagImage(country),
-      title: Text(country.name),
-      trailing: Text('+${country.phoneCode}'),
-    );
+  _openCountryPickerDialog() {
+    return CountryCodePicker(
+        onChanged: (value) {
+          setState(() => _selectedDialogCountry = value.dialCode!);
+          didChange(fullNumber);
+        },
+        // Initial selection and favorite can be one of code ('IT') OR dial_code('+39')
+        initialSelection: _defaultSelectedCountryIsoCode,
+        favorite: _priorityListByIsoCode,
+        showFlagDialog: true,
+        onInit: (code) => {
+              setValue(code!.dialCode),
+              _selectedDialogCountry = code.dialCode!,
+              debugPrint("on init ${code.name} ${code.dialCode} ${code.name}"),
+            });
   }
 }

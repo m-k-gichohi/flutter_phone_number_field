@@ -1,8 +1,9 @@
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_phone_field/form_builder_phone_field.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_phone_number_field/flutter_phone_field.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +24,9 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
         FormBuilderLocalizations.delegate,
+        CountryLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
       ],
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -41,7 +45,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("FormBuilderPhoneField")),
+      appBar: AppBar(title: const Text("FlutterPhoneField")),
       body: FormBuilder(
         key: _formKey,
         child: Padding(
@@ -49,29 +53,15 @@ class MyHomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              FormBuilderPhoneField(
+              FlutterPhoneField(
                 name: 'phone_number',
                 decoration: const InputDecoration(
                   labelText: 'Phone Number',
                   hintText: 'Hint',
                 ),
                 // onChanged: _onChanged,
-                priorityListByIsoCode: const ['KE'],
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.numeric(),
-                  FormBuilderValidators.required(),
-                ]),
-              ),
-              const SizedBox(height: 15),
-              FormBuilderPhoneField(
-                name: 'phone_number_cupertino',
-                isCupertinoPicker: true,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  hintText: 'Hint',
-                ),
-                // onChanged: _onChanged,
-                priorityListByIsoCode: const ['US'],
+                priorityListByIsoCode: const ['KE', 'US'],
+                defaultSelectedCountryIsoCode: 'KE',
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.numeric(),
                   FormBuilderValidators.required(),
