@@ -5,7 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:phone_number/phone_number.dart';
+import 'package:phone_numbers_parser/phone_numbers_parser.dart';
+// import 'package:phone_number/phone_number.dart';
+// import 'package:phone_number/phone_number.dart';
 
 //TODO: Switch country_pickers for country_code_picker
 /// Field for international phone number input.
@@ -337,12 +339,12 @@ class _FlutterPhoneNumberFieldState
   Future<void> _parsePhone() async {
     if (initialValue != null && initialValue!.isNotEmpty) {
       try {
-        final parseResult = await PhoneNumberUtil().parse(initialValue!);
+        final parseResult =  PhoneNumber.parse(initialValue!);
         setState(() {
           _selectedDialogCountry =
-              CountryPickerUtils.getCountryByIsoCode(parseResult.regionCode);
+              CountryPickerUtils.getCountryByIsoCode(parseResult.countryCode);
         });
-        _effectiveController.text = parseResult.nationalNumber;
+        _effectiveController.text = parseResult.international;
       } catch (error) {
         _effectiveController.text = initialValue!.replaceFirst('+', '');
         debugPrint(error.toString());
